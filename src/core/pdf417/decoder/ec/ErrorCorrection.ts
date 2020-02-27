@@ -19,8 +19,7 @@
 // import com.google.zxing.ChecksumException;
 import ChecksumException from '../../../ChecksumException';
 
-import ModulusPoly from './ModulusPoly';
-import ModulusGF from './ModulusGF';
+import { ModulusPoly, ModulusGF  } from './ModulusPoly';
 
 /**
  * <p>PDF417 error correction implementation.</p>

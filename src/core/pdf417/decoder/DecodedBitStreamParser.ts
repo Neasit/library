@@ -26,7 +26,7 @@ import DecoderResult from '../../common/DecoderResult';
 import PDF417ResultMetadata from '../PDF417ResultMetadata';
 
 // import java.io.ByteArrayOutputStream;
-// import java.math.BigInteger;
+// import java.math.JSBI.BigInteger;
 // import java.nio.charset.Charset;
 // import java.nio.charset.StandardCharsets;
 // import java.util.Arrays;
@@ -37,6 +37,7 @@ import Integer from '../../util/Integer';
 import Long from '../../util/Long';
 import ByteArrayOutputStream from '../../util/ByteArrayOutputStream';
 import StringEncoding from '../../util/StringEncoding';
+import { default as JSBI } from '../../util/JSBI';
 
 
 /*private*/ enum Mode {
@@ -48,19 +49,19 @@ import StringEncoding from '../../util/StringEncoding';
   PUNCT_SHIFT
 }
 
-function getEXP900(): BigInt[] {
+function getEXP900(): JSBI[] {
   // in Java - array with length = 16
   let EXP900 = [];
 
-  EXP900[0] = BigInt(1);
+  EXP900[0] = JSBI.BigInt(1);
 
-  let nineHundred = BigInt(900);
+  let nineHundred = JSBI.BigInt(900);
 
   EXP900[1] = nineHundred;
 
   // in Java - array with length = 16
   for (let i /*int*/ = 2; i < 16; i++) {
-    EXP900[i] = EXP900[i - 1] * nineHundred;
+    EXP900[i] = JSBI.multiply(JSBI.BigInt(EXP900[i - 1]), JSBI.BigInt(nineHundred));
   }
 
   return EXP900;
@@ -113,7 +114,7 @@ export default /*final*/ class DecodedBitStreamParser {
    * Table containing values for the exponent of 900.
    * This is used in the numeric compaction decode algorithm.
    */
-  private static /*final*/ EXP900: BigInt[] = getEXP900();
+  private static /*final*/ EXP900: JSBI[] = getEXP900();
 
   private static /*final*/ NUMBER_OF_SEQUENCE_CODEWORDS: int = 2;
 
@@ -602,7 +603,7 @@ export default /*final*/ class DecodedBitStreamParser {
                    * JavaScript stores numbers as 64 bits floating point numbers, but all bitwise operations are performed on 32 bits binary numbers.
                    * So the next bitwise operation could not be done with simple numbers
                    */
-                  decodedBytes.write(/*(byte)*/Number(BigInt(value) >> BigInt(8 * (5 - j))));
+                  decodedBytes.write(/*(byte)*/JSBI.toNumber(JSBI.signedRightShift(JSBI.BigInt(value), JSBI.BigInt(8 * (5 - j)))));
                 }
                 value = 0;
                 count = 0;
@@ -656,7 +657,7 @@ export default /*final*/ class DecodedBitStreamParser {
              * So the next bitwise operation could not be done with simple numbers
             */
             for (let j /*int*/ = 0; j < 6; ++j) {
-              decodedBytes.write(/*(byte)*/Number(BigInt(value) >> BigInt(8 * (5 - j))));
+              decodedBytes.write(/*(byte)*/JSBI.toNumber(JSBI.signedRightShift(JSBI.BigInt(value), JSBI.BigInt(8 * (5 - j)))));
             }
             value = 0;
             count = 0;
@@ -762,9 +763,9 @@ export default /*final*/ class DecodedBitStreamParser {
    * @throws FormatException
    */
   private static decodeBase900toBase10(codewords: Int32Array, count: int): string {
-    let result: bigint = BigInt(0);
+    let result: JSBI = JSBI.BigInt(0);
     for (let i /*int*/ = 0; i < count; i++) {
-      result += BigInt(DecodedBitStreamParser.EXP900[count - i - 1]) * BigInt(codewords[i]);
+      result = JSBI.add(JSBI.BigInt(result), JSBI.multiply(JSBI.BigInt(DecodedBitStreamParser.EXP900[count - i - 1]),  JSBI.BigInt(codewords[i])));
     }
     let resultString: String = result.toString();
     if (resultString.charAt(0) !== '1') {

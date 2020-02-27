@@ -85,5 +85,9 @@ export { default as Code128Reader } from './core/oned/Code128Reader';
 export { default as ITFReader } from './core/oned/ITFReader';
 export { default as Code39Reader } from './core/oned/Code39Reader';
 export { default as RSS14Reader } from './core/oned/rss/RSS14Reader';
-export { default as RSSExpandedReader } from './core/oned/rss/expanded/RSSExpandedReader';
 export { default as MultiformatReader } from './core/oned/MultiFormatOneDReader';
+
+// pdf417
+export { default as PDF417Reader } from './core/pdf417/PDF417Reader';
+export { default as PDF417Common } from './core/pdf417/PDF417Common';
+export { default as PDF417ResultMetadata } from './core/pdf417/PDF417ResultMetadata';

@@ -19,13 +19,14 @@
 import IllegalArgumentException from '../../../IllegalArgumentException';
 import System from '../../../util/System';
 import StringBuilder from '../../../util/StringBuilder';
-import ModulusGF from './ModulusGF';
 
+import PDF417Common from '../../PDF417Common';
+import ArithmeticException from '../../../ArithmeticException';
 /**
  * @author Sean Owen
  * @see com.google.zxing.common.reedsolomon.GenericGFPoly
  */
-export default /*final*/ class ModulusPoly {
+export /*final*/ class ModulusPoly {
 
   private /*final*/ field: ModulusGF;
   private /*final*/ coefficients: Int32Array;
@@ -269,6 +270,104 @@ export default /*final*/ class ModulusPoly {
       }
     }
     return result.toString();
+  }
+
+}
+
+
+/**
+ * <p>A field based on powers of a generator integer, modulo some modulus.</p>
+ *
+ * @author Sean Owen
+ * @see com.google.zxing.common.reedsolomon.GenericGF
+ */
+export /*public final*/ class ModulusGF {
+
+  public static /*final*/ PDF417_GF: ModulusGF = new ModulusGF(PDF417Common.NUMBER_OF_CODEWORDS, 3);
+
+  private /*final*/ expTable: Int32Array;
+  private /*final*/ logTable: Int32Array;
+  private /*final*/ zero: ModulusPoly;
+  private /*final*/ one: ModulusPoly;
+  private /*final*/ modulus: /*int*/ number;
+
+  private constructor(modulus: /*int*/ number, generator: /*int*/ number) {
+    this.modulus = modulus;
+    this.expTable = new Int32Array(modulus);
+    this.logTable = new Int32Array(modulus);
+    let x: /*int*/ number = 1;
+    for (let i /*int*/ = 0; i < modulus; i++) {
+      this.expTable[i] = x;
+      x = (x * generator) % modulus;
+    }
+    for (let i /*int*/ = 0; i < modulus - 1; i++) {
+      this.logTable[this.expTable[i]] = i;
+    }
+    // logTable[0] == 0 but this should never be used
+    this.zero = new ModulusPoly(this, new Int32Array([0]));
+    this.one = new ModulusPoly(this, new Int32Array([1]));
+  }
+
+
+  getZero(): ModulusPoly {
+    return this.zero;
+  }
+
+  getOne(): ModulusPoly {
+    return this.one;
+  }
+
+  buildMonomial(degree: /*int*/ number, coefficient: /*int*/ number): ModulusPoly {
+    if (degree < 0) {
+      throw new IllegalArgumentException();
+    }
+    if (coefficient === 0) {
+      return this.zero;
+    }
+    let coefficients: Int32Array = new Int32Array(degree + 1);
+    coefficients[0] = coefficient;
+    return new ModulusPoly(this, coefficients);
+  }
+
+  add(a: /*int*/ number, b: /*int*/ number): /*int*/ number {
+    return (a + b) % this.modulus;
+  }
+
+  subtract(a: /*int*/ number, b: /*int*/ number): /*int*/ number {
+    return (this.modulus + a - b) % this.modulus;
+  }
+
+  exp(a: /*int*/ number): /*int*/ number {
+    return this.expTable[a];
+  }
+
+  log(a: /*int*/ number): /*int*/ number {
+    if (a === 0) {
+      throw new IllegalArgumentException();
+    }
+    return this.logTable[a];
+  }
+
+  inverse(a: /*int*/ number): /*int*/ number {
+    if (a === 0) {
+      throw new ArithmeticException();
+    }
+    return this.expTable[this.modulus - this.logTable[a] - 1];
+  }
+
+  multiply(a: /*int*/ number, b: /*int*/ number): /*int*/ number {
+    if (a === 0 || b === 0) {
+      return 0;
+    }
+    return this.expTable[(this.logTable[a] + this.logTable[b]) % (this.modulus - 1)];
+  }
+
+  getSize(): /*int*/ number {
+    return this.modulus;
+  }
+
+  equals(o: Object): boolean {
+    return o === this;
   }
 
 }

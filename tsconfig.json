@@ -8,15 +8,17 @@
       "dom"
     ],
     "outDir": "./esm5/",
+    "allowJs": true,
     "alwaysStrict": true,
     "noImplicitAny": false,
     "sourceMap": true,
-    "declaration": true,
+    "declaration": false,
     "preserveConstEnums": true,
     "downlevelIteration": true
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.js"
   ],
   "exclude": [
     "src/test"

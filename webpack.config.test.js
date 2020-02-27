@@ -18,7 +18,7 @@ module.exports = (env, argv) => {
     mode: 'development',
     entry: './src/index.ts',
     resolve: {
-      extensions: ['.ts'],
+      extensions: ['.ts', '.js'],
     },
     module: {
       rules: [{
@@ -26,6 +26,11 @@ module.exports = (env, argv) => {
         exclude: /node_modules/,
         include: path.resolve('src'), // instrument only testing sources with Istanbul, after ts-loader runs
         use: loaders
+      },
+      {
+        test: /\.js?$/,
+        include: path.resolve('src'), // instrument only testing sources with Istanbul, after ts-loader runs
+        exclude: /node_modules/,
       }],
     },
     plugins: [

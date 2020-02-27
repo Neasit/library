@@ -12,6 +12,7 @@ const {
 } = require('webpack-config-utils');
 
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 // common requires
 const {
@@ -63,7 +64,7 @@ const config = (env, argv) => {
      * only look for common JavaScript file extension (.js)
      */
     resolve: {
-      extensions: ['.ts'],
+      extensions: ['.ts', '.js'],
     },
 
     /**
@@ -96,9 +97,9 @@ const config = (env, argv) => {
        * using a RegEx on the name, which must end with `.min.js`
        */
       ifProd(
-        new UglifyJsPlugin({
+        new TerserPlugin({
           sourceMap: true,
-          uglifyOptions: {
+          terserOptions: {
             compress: true,
             output: {
               comments: false
@@ -127,7 +128,13 @@ const config = (env, argv) => {
         include: /src/,
         exclude: /src\/test/,
         loader: 'awesome-typescript-loader',
-      }],
+      },
+      {
+        test: /\.js?$/,
+        include: /src/,
+        exclude: /src\/test/,
+      }
+    ],
     },
   }];
 };
